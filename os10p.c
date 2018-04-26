@@ -12,7 +12,8 @@ union semun{
 	int val; 
 	struct semid_ds *buf;
 	ushort *array;
-}un;
+	struct seminfo *__buf; 
+};
 
 //create a semaphore
 int createSem(int semNo){
@@ -31,6 +32,7 @@ int createSem(int semNo){
 
 //initialize the semaphore 
 void initializeSem(int semId, int semNo, int value){
+	union semun un;
 	un.val = value ;
 
 	if (semctl(semId,semNo,SETVAL, un)<0){
@@ -62,9 +64,7 @@ void signal(int semId, int semNo){
 
 //producer 
 int main(){
-	char ch, *str = "Product";
-	char *no, *endl;
-	endl[0] = '\n';
+	char ch, *str ;
 	int semid = createSem(3);
 	initializeSem(semid, MUTEX, 1);
 	initializeSem(semid, FULL, 0);
@@ -82,7 +82,8 @@ int main(){
 		
 		//produce
 		i = i + 1;
-		sprintf(str,"%s %d\n",str,i);
+		
+		sprintf(str,"Product %d\n",i);
 
 		//write in buffer
 		fwrite(str, sizeof(str),1,buffer);
@@ -97,6 +98,7 @@ int main(){
 
 		printf("Want to Produce more ?(Y or N): ");
 		scanf("%c",&ch);
+		getchar();
 	}while(ch=='Y'||ch=='y');
 
 

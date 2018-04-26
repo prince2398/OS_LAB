@@ -79,11 +79,11 @@ char *extractPoduct(char *fileName){
 		fputc(ch,temp);
 	}
 	while((ch = fgetc(buffer)) != EOF){
-		sprintf(str , "%s%c",str,ch);
+		snprintf(str ,sizeof(str), "%s%c",str,ch);
 	}
 	fclose(buffer);
 	fclose(temp);
-
+	remove(fileName);
 	rename("temp.txt",fileName);
 
 	return str;
@@ -93,6 +93,9 @@ char *extractPoduct(char *fileName){
 int main(){
 	char *str,ch;
 	int semid = createSem(3);
+	initializeSem(semid, MUTEX, 1);
+	initializeSem(semid, FULL, 0);
+	initializeSem(semid, EMPTY, 10);
 
 	do{
 		//entry section 
