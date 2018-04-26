@@ -61,41 +61,58 @@ void signal(int semId, int semNo){
 		exit(2);
 	}
 }
+char * append(char str[],char c){
+	int len = strlen(str);
+	char *str1 = malloc(len+1+1);
+	strcpy(str1,str);
+	str[len] = c;
+	str[len+1] = '\0';
+	return str1;
+}
 
-char *extractPoduct(char *fileName){
+//Consume product
+void consumeProduct(char *fileName,char str[]){
 	FILE *buffer = fopen(fileName,"a+");
 	FILE *temp = fopen("temp.txt","w");
-	char *str = NULL;
+	
 	char ch;
-	size_t len = 0;
-	int last = 0;
+	int len;
+	int line = 0,t;
 
-	fseek(buffer,-11,SEEK_END);
-	while(fgetc(buffer)!='\n');
-	last = ftell(buffer);
-	fseek(buffer,0,SEEK_SET);
-
-	while((ch = fgetc(buffer)) < last){
-		fputc(ch,temp);
-	}
 	while((ch = fgetc(buffer)) != EOF){
-		snprintf(str ,sizeof(str), "%s%c",str,ch);
+		if (ch == '\n'){
+			line ++;
+		}
 	}
+	line = line - 1;
+	rewind(buffer);
+
+	while((ch = fgetc(buffer)) != EOF){
+		if (ch == '\n'){
+			t++;
+		}
+		if (t!=line){
+			fputc(ch,temp);
+		}else{
+			len = strlen(str);
+			str[len] = ch;
+			str[len+1] = '\0';
+			
+		}
+	}
+	
 	fclose(buffer);
 	fclose(temp);
 	remove(fileName);
 	rename("temp.txt",fileName);
 
-	return str;
 }
 
 //consumer
 int main(){
-	char *str,ch;
+	char ch;
+	char str[25] = {'\0'};
 	int semid = createSem(3);
-	initializeSem(semid, MUTEX, 1);
-	initializeSem(semid, FULL, 0);
-	initializeSem(semid, EMPTY, 10);
 
 	do{
 		//entry section 
@@ -103,18 +120,17 @@ int main(){
 		wait(semid, MUTEX);
 
 		//critical section
+		str[0] = '\0';
+		consumeProduct("buffer.txt",str);
 		
-		str = extractPoduct("buffer.txt");
-		if (str[sizeof(str)-1] == '\n'){
-			str[sizeof(str)-1] = '\0';
-		}
 		printf("%s is consumed\n",str);
 		//exit section
 		signal(semid, MUTEX);
 		signal(semid, EMPTY);
 
-		printf("Want to Consume more ?(Y or N)\n");
-		scanf("%c",&ch);;
+		printf("Want to Consume more ?(Y or N)");
+		scanf("%c",&ch);
+		getchar();
 	}while(ch=='Y'||ch=='y');
 	return 0;
 }

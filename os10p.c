@@ -64,7 +64,7 @@ void signal(int semId, int semNo){
 
 //producer 
 int main(){
-	char ch, *str ;
+	char ch ;
 	int semid = createSem(3);
 	initializeSem(semid, MUTEX, 1);
 	initializeSem(semid, FULL, 0);
@@ -83,10 +83,7 @@ int main(){
 		//produce
 		i = i + 1;
 		
-		sprintf(str,"Product %d\n",i);
-
-		//write in buffer
-		fwrite(str, sizeof(str),1,buffer);
+		fprintf(buffer, "Product %d\n",i );
 
 		fclose(buffer);
 
