@@ -7,13 +7,6 @@
 #define FULL 1
 #define EMPTY 2
 
-
-union semun{
-	int val; 
-	struct semid_ds *buf;
-	ushort *array;
-}un;
-
 //create a semaphore
 int createSem(int semNo){
 	int id;
@@ -30,17 +23,6 @@ int createSem(int semNo){
 	return id;
 }
 
-//initialize the semaphore 
-void initializeSem(int semId, int semNo, int value){
-	un.val = value ;
-
-	if (semctl(semId,semNo,SETVAL, un)<0){
-		perror("semctl: ");
-		exit(1);
-	}
-
-}
-
 //wait
 void wait(int semId,int semNo){
 	struct sembuf buff = {semNo, -1, 0};
@@ -51,7 +33,6 @@ void wait(int semId,int semNo){
 	}
 }
 
-
 //signal
 void signal(int semId, int semNo){
 	struct sembuf buff = {semNo, 1, 0};
@@ -60,14 +41,6 @@ void signal(int semId, int semNo){
 		perror("semop: ");
 		exit(2);
 	}
-}
-char * append(char str[],char c){
-	int len = strlen(str);
-	char *str1 = malloc(len+1+1);
-	strcpy(str1,str);
-	str[len] = c;
-	str[len+1] = '\0';
-	return str1;
 }
 
 //Consume product
